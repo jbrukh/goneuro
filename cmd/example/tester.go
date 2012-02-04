@@ -11,6 +11,9 @@ import (
 const SERIAL_PORT = "/dev/tty.MindBand"
 const BUF_SIZE = 512
 
+// this is a sample program that connects to
+// the MindBand and displays some streaming
+// data
 func main() {
     listener := &goneuro.ThinkGearListener{
         RawSignal: func(a, b byte) {
@@ -20,23 +23,6 @@ func main() {
             fmt.Println(delta, theta, lowAlpha, highAlpha, lowBeta, highBeta, lowGamma, midGamma)
         },
     }
-    connect(listener)
+   goneuro.Connect(SERIAL_PORT, listener)
 }
 
-// connect to the device over the serial port
-// and start parsing data
-func connect(consumer *goneuro.ThinkGearListener) {
-    mindBand, e := os.Open(SERIAL_PORT)
-    defer mindBand.Close()
-    if e != nil {
-        fmt.Fprintf(os.Stderr, "error: %v\n", e)
-        os.Exit(1)
-    }
-    println("connected!")
-
-    reader, e := bufio.NewReaderSize(mindBand, BUF_SIZE)
-    if e != nil {
-        println("error:", e)
-    }
-    goneuro.ThinkGearRead(reader, consumer)
-}

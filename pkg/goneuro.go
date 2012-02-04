@@ -2,7 +2,10 @@
 package goneuro
 
 // 
-// A stream parser for the NeuroSky MindBand.
+// A stream parser for the ThinkGear protocol
+// for NeuroSky consumer EEG devices.
+//
+// Author: Jake Brukhman <jbrukh@gmail.com>
 //
 
 import (
@@ -39,15 +42,50 @@ const (
     CODE_EEG_POWER      = 0x83
 )
 
+// RawSignalListener listens for the raw data
+// signal that comes in at 512Hz; the format
+// of the signal is two bytes that need to
+// be concatenated as follows:
+//
+//    int16(first)<<8 | int16(second)
+//
 type RawSignalListener func(byte, byte)
+
+// BlinkStrengthListener listens for the blinl
+// signal and returns a value in the range
+// 1-255 corresponding to the blink; this
+// value is sampled on demand and appears in
+// the 1Hz messages
 type BlinkStrengthListener func(byte)
+
+// MediationListener listens to the meditation
+// value, which is a value between 0-100 and
+// is sampled at 1Hz
 type MeditationListener func(byte)
+
+// same as Meditation value
 type AttentionListener func(byte)
+
+// SignalStrengthListener listens for signal
+// strength, with 0 being the best and 200
+// being no signal; sampled at 1 Hz
 type SignalStrengthListener func(byte)
+
+// EEGPowerListener is sampled at 1 Hz and
+// provides 
 type EEGPowerListener func(int, int, int, int, int, int, int, int)
 
 // ThinkGearListener will listen to different
-// messages from the ThinkGearDevice
+// messages from the device; you can instantiate
+// only those listeners that you wish to trigger,
+// for example as follows:
+//
+//   l := ThinkGearListener{
+//      RawSignal: func(a, b byte) {
+//          ...
+//      },
+//   }
+//
 type ThinkGearListener struct {
     RawSignal RawSignalListener
     BlinkStrength BlinkStrengthListener
@@ -57,8 +95,33 @@ type ThinkGearListener struct {
     EEGPower EEGPowerListener
 }
 
-// parses the TG byte stream
-func ThinkGearRead(reader *bufio.Reader, listener *ThinkGearListener) {
+// Connect to the device over the serial port
+// and start parsing data; the serial port
+// is typically a string of the form
+// 
+//   /dev/tty.MindBand
+//
+// or whatever you set up in your systems Bluetooth
+// options for the device.
+func Connect(serialPort string, consumer *goneuro.ThinkGearListener) {
+    mindBand, err := os.Open(SERIAL_PORT)
+    defer mindBand.Close()
+    if err != nil {
+        fmt.Fprintf(os.Stderr, "error: %v\n", err)
+        os.Exit(1)
+    }
+    println("connected!")
+
+    reader, err := bufio.NewReaderSize(mindBand, BUF_SIZE)
+    if err != nil {
+        println("error:", err)
+    }
+    goneuro.thinkGearParse(reader, consumer)
+}
+
+
+// thinkGearParse parses the TG byte stream
+func thinkGearParse(reader *bufio.Reader, listener *ThinkGearListener) {
     var row int
     // function that reads the stream
     // one byte at a time
@@ -118,6 +181,9 @@ func ThinkGearRead(reader *bufio.Reader, listener *ThinkGearListener) {
     }
 }
 
+// parsePayload will parse the payload buffer and trigger
+// the appropriate listeners in the provided listener
+// object
 func parsePayload(payload []byte, listener *ThinkGearListener) {
     inx := 0
     var codeLevel int
