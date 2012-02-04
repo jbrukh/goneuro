@@ -6,6 +6,7 @@ import (
     "flag"
 	"os"
 	"goneuro"
+	"fmt"
 )
 
 var tcpPort *string = flag.String("port", "9999", "port for the socket")
@@ -34,6 +35,7 @@ func main() {
 	println("getting connection to device...")
 	handler := &goneuro.ThinkGearListener{
 		RawSignal: func(a, b byte) {
+		    fmt.Println(int16(a)<<8|int16(b))
 			conn.Write([]byte{a,b})
 		},
 	}
