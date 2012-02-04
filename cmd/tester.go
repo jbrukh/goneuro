@@ -15,7 +15,10 @@ const BUF_SIZE = 512
 func main() {
     listener := &goneuro.ThinkGearListener{
         RawSignal: func(a, b byte) {
-            os.Stdout.Write([]byte{a,b})
+            fmt.Println("raw: ", int16(a)<<8|int16(b))
+        },
+        EEGPower: func(delta, theta, lowAlpha, highAlpha, lowBeta, highBeta, lowGamma, midGamma int) {
+            fmt.Println(delta, theta, lowAlpha, highAlpha, lowBeta, highBeta, lowGamma, midGamma)
         },
     }
     connect(listener)
