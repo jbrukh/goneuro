@@ -103,8 +103,8 @@ type ThinkGearListener struct {
 //
 // or whatever you set up in your systems Bluetooth
 // options for the device.
-func Connect(serialPort string, consumer *goneuro.ThinkGearListener) {
-    mindBand, err := os.Open(SERIAL_PORT)
+func Connect(serialPort string, consumer *ThinkGearListener) {
+    mindBand, err := os.Open(serialPort)
     defer mindBand.Close()
     if err != nil {
         fmt.Fprintf(os.Stderr, "error: %v\n", err)
@@ -112,11 +112,8 @@ func Connect(serialPort string, consumer *goneuro.ThinkGearListener) {
     }
     println("connected!")
 
-    reader, err := bufio.NewReaderSize(mindBand, BUF_SIZE)
-    if err != nil {
-        println("error:", err)
-    }
-    goneuro.thinkGearParse(reader, consumer)
+    reader := bufio.NewReader(mindBand)
+    thinkGearParse(reader, consumer)
 }
 
 

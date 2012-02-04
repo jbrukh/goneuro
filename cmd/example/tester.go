@@ -2,14 +2,11 @@
 package main
 
 import (
-    "bufio"
-    "os"
     "goneuro"
     "fmt"
 )
 
 const SERIAL_PORT = "/dev/tty.MindBand"
-const BUF_SIZE = 512
 
 // this is a sample program that connects to
 // the MindBand and displays some streaming
