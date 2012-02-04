@@ -2,23 +2,41 @@
 package main
 
 import (
-    "fmt"
-//    "net"
-    "os"
-    "bufio"
+    "net"
+    "flag"
+	"os"
+	"goneuro"
 )
 
-func main() {
-    reader, err := bufio.NewReaderSize(os.Stdin, 512)
-    if err != nil {
-        println("could not read stdin")
-    }
+var tcpPort *string = flag.String("port", "9999", "port for the socket")
+var serialPort *string = flag.String("serial", "/dev/tty.MindBand", "serial port for the device")
 
-    for {
-        b, err := reader.ReadByte()
-        if err != nil {
-            break
-        }
-        fmt.Println(b)
-    }
+func main() {
+    flag.Parse()
+
+  	// start a socket listener
+    addr := "localhost:"+*tcpPort
+    listener, err := net.Listen("tcp", addr)
+    if err != nil {
+        println("couldn't listen: ", err)
+    	os.Exit(1)
+	}
+
+    // wait for an incoming connection
+    println("waiting for incoming connection...")
+	conn, err := listener.Accept()
+    if err != nil {
+        println("couldn't establish connection: ", err)
+    	os.Exit(1)
+	}
+
+	// write the raw signal bytes to the socket 
+	println("getting connection to device...")
+	handler := &goneuro.ThinkGearListener{
+		RawSignal: func(a, b byte) {
+			conn.Write([]byte{a,b})
+		},
+	}
+		
+	goneuro.Connect(*serialPort, handler)
 }
