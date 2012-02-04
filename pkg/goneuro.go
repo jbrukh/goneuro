@@ -67,7 +67,7 @@ func ThinkGearRead(reader *bufio.Reader, listener *ThinkGearListener) {
         if err != nil {
             println("error reading stream:", err)
         }
-        fmt.Fprintf(os.Stdout, "%v\t:%v\n", row, b)
+        fmt.Fprintf(os.Stderr, "%v\t:%v\n", row, b)
         if row > 0 {
             row++
         }
@@ -75,7 +75,7 @@ func ThinkGearRead(reader *bufio.Reader, listener *ThinkGearListener) {
     }
 
     for {
-        fmt.Println("---------------------------")
+        fmt.Fprintln(os.Stderr, "---------------------------")
         // sync up
         if next() != SYNC || next() != SYNC {
             continue
@@ -122,7 +122,7 @@ func parsePayload(payload []byte, listener *ThinkGearListener) {
     inx := 0
     var codeLevel int
     if len(payload) > 4 {
-        fmt.Println("long")
+        println("long")
     }
     nextRow := func(k int) {
         inx += k
@@ -184,11 +184,4 @@ func parsePayload(payload []byte, listener *ThinkGearListener) {
                 break
         }
     }
-}
-
-
-
-func PrintSignal(first, second byte) {
-    value := uint16(first)<<8 | uint16(second)
-    fmt.Println("raw: ", int(value))
 }

@@ -11,15 +11,11 @@ import (
 //const SERIAL_PORT = "/dev/tty.MindWaveMobile-SSPDev"
 const SERIAL_PORT = "/dev/tty.MindBand"
 const BUF_SIZE = 512
-const PORT = "9999"
 
 func main() {
     listener := &goneuro.ThinkGearListener{
-        SignalStrength: func(value byte) {
-            fmt.Fprintln(os.Stderr, "Signal strength:", value)
-        },
         RawSignal: func(a, b byte) {
-            fmt.Fprintln(os.Stderr, int16(a)<<8|int16(b))
+            os.Stdout.Write([]byte{a,b})
         },
     }
     connect(listener)
