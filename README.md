@@ -11,12 +11,6 @@ license.
 
 ------------
 
-### Background
-
-See code comments for a refresher on naive Bayesian classifiers.
-
-------------
-
 ### Installation
 
 Use [go-gb](http://code.google.com/p/go-gb/) to build. (Makefiles to come.)
