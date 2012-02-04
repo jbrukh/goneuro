@@ -8,7 +8,6 @@ import (
     "fmt"
 )
 
-//const SERIAL_PORT = "/dev/tty.MindWaveMobile-SSPDev"
 const SERIAL_PORT = "/dev/tty.MindBand"
 const BUF_SIZE = 512
 
@@ -24,8 +23,11 @@ func main() {
     connect(listener)
 }
 
+// connect to the device over the serial port
+// and start parsing data
 func connect(consumer *goneuro.ThinkGearListener) {
     mindBand, e := os.Open(SERIAL_PORT)
+    defer mindBand.Close()
     if e != nil {
         fmt.Fprintf(os.Stderr, "error: %v\n", e)
         os.Exit(1)
@@ -37,5 +39,4 @@ func connect(consumer *goneuro.ThinkGearListener) {
         println("error:", e)
     }
     goneuro.ThinkGearRead(reader, consumer)
-    mindBand.Close()
 }
