@@ -5,8 +5,6 @@ import (
     "bufio"
     "os"
     "goneuro"
-    //"flag"
-    "net"
     "fmt"
 )
 
@@ -16,34 +14,18 @@ const BUF_SIZE = 512
 const PORT = "9999"
 
 func main() {
-    connect(goneuro.PrintSignal)
+    listener := &goneuro.ThinkGearListener{
+        SignalStrength: func(value byte) {
+            fmt.Fprintln(os.Stderr, "Signal strength:", value)
+        },
+        RawSignal: func(a, b byte) {
+            fmt.Fprintln(os.Stderr, int16(a)<<8|int16(b))
+        },
+    }
+    connect(listener)
 }
 
-func waitForTcp() {
-    println("listening...")
-    l, err := net.Listen("tcp", "localhost:"+PORT)
-    if err != nil {
-        fmt.Fprintf(os.Stderr, "could not listen: %v\n", err)
-        os.Exit(1)
-    }
-    // wait for connection
-    conn, err := l.Accept()
-    if err != nil {
-        println("could not accept:", err)
-    }
-
-    println("got tcp connection...")
-
-    socketWriter := func (first, second byte) {
-        println("writing to socket: ", first, second)
-        conn.Write([]byte{first, second})
-    }
-
-    connect(socketWriter)
-
-}
-
-func connect(consumer goneuro.RawSignalConsumer) {
+func connect(consumer *goneuro.ThinkGearListener) {
     mindBand, e := os.Open(SERIAL_PORT)
     if e != nil {
         fmt.Fprintf(os.Stderr, "error: %v\n", e)
@@ -55,6 +37,6 @@ func connect(consumer goneuro.RawSignalConsumer) {
     if e != nil {
         println("error:", e)
     }
-    goneuro.TGRead(reader, consumer)
+    goneuro.ThinkGearRead(reader, consumer)
     mindBand.Close()
 }
