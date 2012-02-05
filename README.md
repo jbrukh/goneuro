@@ -1,6 +1,3 @@
-Jake Brukhman
-jbrukh@gmail.com
-
 ## NeuroSky/ThinkGear Go Driver
 
 Parser for the NeuroSky ThinkGear protocol used by NeuroSky devices.
@@ -13,19 +10,22 @@ license.
 
 ### Installation
 
-Use [go-gb](http://code.google.com/p/go-gb/) to build. (Makefiles to come.)
+Use [go-gb](http://code.google.com/p/go-gb/) to build. (Currently,
+the auto-generated makefiles are having compatibility issues.)
 
 ### Documentation
 
-See the GoPkgDoc documentation [here](http://gopkgdoc.appspot.com/pkg/github.com/jbrukh/goneuro).
+See goneuro source and example below.
 
 ------------
 
 ### Features
 
-TBD
+* Easy-to-use interface
+* Speed
 
 ------------
+
 ### Example
 
 See the example/ directory.
