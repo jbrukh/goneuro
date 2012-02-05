@@ -16,6 +16,7 @@ func main() {
     _, err := goneuro.Connect(SERIAL_PORT, listener)
     if err != nil {
         fmt.Println(err)
+        return
     }
 
     wait := make(chan bool)

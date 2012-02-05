@@ -121,7 +121,7 @@ func Connect(serialPort string, listener *ThinkGearListener) (disconnect chan<- 
     println("connected: ", serialPort)
 
     // create the disconnect channel
-    ch := make(chan bool, 1)
+    ch := make(chan bool)
 
     // go and process this this stream asynchronously
     // until the user sends a signal to disconnect
@@ -134,7 +134,7 @@ func Connect(serialPort string, listener *ThinkGearListener) (disconnect chan<- 
 
 // thinkGearParse parses the TG byte stream
 func thinkGearParse(device *os.File, listener *ThinkGearListener, disconnect <-chan bool) {
-    var row int
+    //var row int
 
     reader := bufio.NewReader(device)
     defer device.Close()
@@ -147,20 +147,26 @@ func thinkGearParse(device *os.File, listener *ThinkGearListener, disconnect <-c
             fmt.Fprintln(os.Stderr, "error reading stream:", err)
             os.Exit(1)
         }
-        fmt.Fprintf(os.Stderr, "%v\t:%v\n", row, b)
-        if row > 0 {
-            row++
-        }
+        //fmt.Fprintf(os.Stderr, "%v\t:%v\n", row, b)
+        //if row > 0 {
+        //    row++
+        //}
         return b
     }
 
     for {
         // check for exit
-        if len(disconnect) > 0 && <-disconnect == true {
-            break
+        select {
+            case v, ok := (<-disconnect):
+                println("v, ok:", v, ok)
+                if ok && v == true {
+                    println("disconnecting from device")
+                    return
+                }
+            default:
         }
 
-        fmt.Fprintln(os.Stderr, "---------------------------")
+        //fmt.Fprintln(os.Stderr, "---------------------------")
         // sync up
         if next() != SYNC || next() != SYNC {
             continue
@@ -175,7 +181,7 @@ func thinkGearParse(device *os.File, listener *ThinkGearListener, disconnect <-c
             continue
         }
 
-        row = 1
+        //row = 1
 
         // read the entire payload
         payload := make([]byte, 0, pLength)
@@ -194,13 +200,14 @@ func thinkGearParse(device *os.File, listener *ThinkGearListener, disconnect <-c
         checksum = 0xFF &^ checksum
 
         stated := next()
-        row = 0
+        //row = 0
         if checksum != stated {
             println("checksum has failed: ", checksum, "expected: ", stated)
             continue
         }
         parsePayload(payload, listener)
     }
+    println("done with parsing")
 }
 
 // parsePayload will parse the payload buffer and trigger
@@ -209,9 +216,6 @@ func thinkGearParse(device *os.File, listener *ThinkGearListener, disconnect <-c
 func parsePayload(payload []byte, listener *ThinkGearListener) {
     inx := 0
     var codeLevel int
-    if len(payload) > 4 {
-        println("long")
-    }
     nextRow := func(k int) {
         inx += k
         codeLevel = 0
