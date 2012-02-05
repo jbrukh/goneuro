@@ -13,8 +13,11 @@ func main() {
             fmt.Println(int16(a)<<8|int16(b))
         },
     }
-    goneuro.Connect(SERIAL_PORT, listener)
+    _, err := goneuro.Connect(SERIAL_PORT, listener)
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    wait := make(chan bool)
+    <-wait
 }
-
-
-

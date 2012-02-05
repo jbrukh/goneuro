@@ -15,30 +15,58 @@ var serialPort *string = flag.String("serial", "/dev/tty.MindBand", "serial port
 func main() {
     flag.Parse()
 
-  	// start a socket listener
+    // start a socket listener
     addr := "localhost:"+*tcpPort
-    listener, err := net.Listen("tcp", addr)
-    if err != nil {
-        println("couldn't listen: ", err)
-    	os.Exit(1)
-	}
 
-    // wait for an incoming connection
-    println("waiting for incoming connection...")
-	conn, err := listener.Accept()
-    if err != nil {
-        println("couldn't establish connection: ", err)
-    	os.Exit(1)
-	}
+    for {
+	    listener, err := net.Listen("tcp", addr)
+	    if err != nil {
+	        println("couldn't listen: ", err)
+            os.Exit(1)
+		}
 
-	// write the raw signal bytes to the socket 
-	println("getting connection to device...")
-	handler := &goneuro.ThinkGearListener{
-		RawSignal: func(a, b byte) {
-		    fmt.Println("raw:", int16(a)<<8|int16(b))
-			conn.Write([]byte{a,b})
-		},
+	    // wait for an incoming connection
+	    println("waiting for incoming connection...")
+		conn, err := listener.Accept()
+	    if err != nil {
+	        println("couldn't establish connection: ", err)
+	        os.Exit(1)
+		}
+
+		// write the raw signal bytes to the socket channel
+		println("getting connection to device...")
+		toSocket := make(chan []byte)
+	    handler := &goneuro.ThinkGearListener{
+			RawSignal: func(a, b byte) {
+			    fmt.Println("raw:", int16(a)<<8|int16(b))
+	            toSocket <- []byte{a,b}
+			},
+		}
+
+		disconnect, err := goneuro.Connect(*serialPort, handler)
+	    if err != nil {
+	       println("couldn't connect: ", *serialPort) 
+	    }
+
+	    wait := make(chan bool)
+
+        // write the incoming data to the socket
+	    go func() {
+	        for {
+	            val := <-toSocket
+	            _, err := conn.Write(val)
+                // when tcp connection closes,
+                // close the socket and start again
+	            if err != nil {
+	                wait <- true
+                    break
+	            }
+	        }
+	    }()
+
+        <-wait
+        println("cycling...")
+	    disconnect <- true
+        conn.Close()
 	}
-		
-	goneuro.Connect(*serialPort, handler)
 }

@@ -112,22 +112,20 @@ type ThinkGearListener struct {
 // for the purposes of ceasing the connection. In
 // order to close the connection, send true to
 // the disconnect channel.
-func Connect(serialPort string, consumer *ThinkGearListener) (disconnect chan<- bool, err os.Error) {
-    mindBand, err := os.Open(serialPort)
+func Connect(serialPort string, listener *ThinkGearListener) (disconnect chan<- bool, err os.Error) {
+    device, err := os.Open(serialPort)
     if err != nil {
         str := fmt.Sprintf("device problem: %s", err)
         return nil, os.NewError(str)
     }
-    defer mindBand.Close()
     println("connected: ", serialPort)
 
     // create the disconnect channel
     ch := make(chan bool, 1)
-    reader := bufio.NewReader(mindBand)
 
     // go and process this this stream asynchronously
     // until the user sends a signal to disconnect
-    go thinkGearParse(reader, consumer, ch)
+    go thinkGearParse(device, listener, ch)
 
     disconnect = ch // cast to send-only
     return
@@ -135,16 +133,19 @@ func Connect(serialPort string, consumer *ThinkGearListener) (disconnect chan<- 
 
 
 // thinkGearParse parses the TG byte stream
-func thinkGearParse(reader *bufio.Reader, listener *ThinkGearListener, disconnect <-chan bool) {
+func thinkGearParse(device *os.File, listener *ThinkGearListener, disconnect <-chan bool) {
     var row int
+
+    reader := bufio.NewReader(device)
+    defer device.Close()
 
     // function that reads the stream
     // one byte at a time
     next := func() byte {
         b, err := reader.ReadByte()
         if err != nil {
-            println("error reading stream:", err)
-            // TODO: may need to abort here
+            fmt.Fprintln(os.Stderr, "error reading stream:", err)
+            os.Exit(1)
         }
         fmt.Fprintf(os.Stderr, "%v\t:%v\n", row, b)
         if row > 0 {
@@ -155,8 +156,7 @@ func thinkGearParse(reader *bufio.Reader, listener *ThinkGearListener, disconnec
 
     for {
         // check for exit
-        peek, ok := <-disconnect
-        if ok && peek == true {
+        if len(disconnect) > 0 && <-disconnect == true {
             break
         }
 
