@@ -1,4 +1,3 @@
-//target:tester
 package main
 
 import (

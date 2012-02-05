@@ -102,30 +102,49 @@ type ThinkGearListener struct {
 //   /dev/tty.MindBand
 //
 // or whatever you set up in your systems Bluetooth
-// options for the device.
-func Connect(serialPort string, consumer *ThinkGearListener) {
+// options for the device. Note that the various
+// portions of the ThinkGearListener will be triggered
+// synchronously to parsing, so it may be desirable
+// in certain situations for the user to throw data
+// onto channels for serial, asynchronous processing.
+//
+// This method will return a send-only channel
+// for the purposes of ceasing the connection. In
+// order to close the connection, send true to
+// the disconnect channel.
+func Connect(serialPort string, consumer *ThinkGearListener) (disconnect chan<- bool, err os.Error) {
     mindBand, err := os.Open(serialPort)
-    defer mindBand.Close()
     if err != nil {
-        fmt.Fprintf(os.Stderr, "error: %v\n", err)
-        os.Exit(1)
+        str := fmt.Sprintf("device problem: %s", err)
+        return nil, os.NewError(str)
     }
-    println("connected!")
+    defer mindBand.Close()
+    println("connected: ", serialPort)
 
+    // create the disconnect channel
+    ch := make(chan bool, 1)
     reader := bufio.NewReader(mindBand)
-    thinkGearParse(reader, consumer)
+
+    // go and process this this stream asynchronously
+    // until the user sends a signal to disconnect
+    go thinkGearParse(reader, consumer, ch)
+
+    disconnect = ch // cast to send-only
+    return
 }
 
 
 // thinkGearParse parses the TG byte stream
-func thinkGearParse(reader *bufio.Reader, listener *ThinkGearListener) {
+func thinkGearParse(reader *bufio.Reader, listener *ThinkGearListener, disconnect <-chan bool) {
     var row int
+
     // function that reads the stream
     // one byte at a time
     next := func() byte {
         b, err := reader.ReadByte()
         if err != nil {
             println("error reading stream:", err)
+            // TODO: may need to abort here
         }
         fmt.Fprintf(os.Stderr, "%v\t:%v\n", row, b)
         if row > 0 {
@@ -135,6 +154,12 @@ func thinkGearParse(reader *bufio.Reader, listener *ThinkGearListener) {
     }
 
     for {
+        // check for exit
+        peek, ok := <-disconnect
+        if ok && peek == true {
+            break
+        }
+
         fmt.Fprintln(os.Stderr, "---------------------------")
         // sync up
         if next() != SYNC || next() != SYNC {

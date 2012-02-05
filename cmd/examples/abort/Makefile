@@ -3,12 +3,12 @@
 
 include $(GOROOT)/src/Make.inc
 
-TARG=tester
+TARG=abort
 GOFILES=\
-	tester.go\
+	abort.go\
 
 # gb: this is the local install
-GBROOT=../..
+GBROOT=../../..
 
 # gb: compile/link against local install
 GCIMPORTS+= -I $(GBROOT)/_obj

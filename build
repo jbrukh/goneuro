@@ -8,8 +8,9 @@ echo Running goinstall \
 else
 echo Building \
 && echo "(in pkg)" gomake $1 && cd pkg && gomake $1 && cd - > /dev/null \
+&& echo "(in cmd/examples/abort)" gomake $1 && cd cmd/examples/abort && gomake $1 && cd - > /dev/null \
+&& echo "(in cmd/examples/streamer)" gomake $1 && cd cmd/examples/streamer && gomake $1 && cd - > /dev/null \
 && echo "(in cmd/tosocket)" gomake $1 && cd cmd/tosocket && gomake $1 && cd - > /dev/null \
-&& echo "(in cmd/example)" gomake $1 && cd cmd/example && gomake $1 && cd - > /dev/null \
 
 fi
 
