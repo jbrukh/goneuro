@@ -6,7 +6,6 @@ import (
     "flag"
 	"os"
 	"goneuro"
-	"fmt"
 )
 
 var tcpPort *string = flag.String("port", "9999", "port for the socket")
