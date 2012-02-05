@@ -35,7 +35,7 @@ func main() {
 	println("getting connection to device...")
 	handler := &goneuro.ThinkGearListener{
 		RawSignal: func(a, b byte) {
-		    fmt.Println(int16(a)<<8|int16(b))
+		    fmt.Println("raw:", int16(a)<<8|int16(b))
 			conn.Write([]byte{a,b})
 		},
 	}
