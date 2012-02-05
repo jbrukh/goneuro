@@ -15,7 +15,7 @@ the auto-generated makefiles are having compatibility issues.)
 
 ### Documentation
 
-See goneuro source and example below.
+See the [gopkgdocs](http://gopkgdoc.appspot.com/pkg/github.com/jbrukh/goneuro/pkg).
 
 ------------
 
