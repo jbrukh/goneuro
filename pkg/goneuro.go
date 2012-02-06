@@ -14,32 +14,26 @@ import (
     "os"
 )
 
-//
-// Data:
-//
-//  POOR_SIGNAL      (0-200, 0 == best)
-//  ATTENTION        (0-100)
-//  MEDITATION       (0-100)
-//  RAW Wave         16-bit value (2 bytes)
-//  ASIC_EEG_POWER   8 3-byte unsigned ints, for: delta, theta, low-alpha, hi-alpha, low-beta, hi-beta, low-gamma, mid-gamma
-//  Blink Strength   (1-255)
-
+// MAX_PAYLOAD_LENGTH is the maximum number of
+// bytes that can be contained in the payload
+// message, not including SYNC, PLENGTH and
+// CHECKSUM bytes.
 const MAX_PAYLOAD_LENGTH = 169
 
 // protocol symbols
 const (
-    SYNC = 0xAA
-    EXCODE = 0x55
+    SYNC                = 0xAA
+    EXCODE              = 0x55
 )
 
 // payload CODE values
 const (
-    CODE_POOR_SIGNAL    = 0x02
-    CODE_ATTENTION      = 0x04
-    CODE_MEDITATION     = 0x05
-    CODE_BLINK_STRENGTH = 0x16
+    CODE_POOR_SIGNAL    = 0x02 // (0-200, 0 == best)
+    CODE_ATTENTION      = 0x04 // (0-100)
+    CODE_MEDITATION     = 0x05 // (0-100)
+    CODE_BLINK_STRENGTH = 0x16 // (1-255)
     CODE_RAW_VALUE      = 0x80 // 128
-    CODE_EEG_POWER      = 0x83
+    CODE_EEG_POWER      = 0x83 // 8 3-byte unsigned ints, for: delta, theta, low-alpha, hi-alpha, low-beta, hi-beta, low-gamma, mid-gamma
 )
 
 // RawSignalListener listens for the raw data
@@ -63,7 +57,8 @@ type BlinkStrengthListener func(byte)
 // is sampled at 1Hz
 type MeditationListener func(byte)
 
-// same as Meditation value
+// AttentionListener has same characteristics
+// as MeditationListener
 type AttentionListener func(byte)
 
 // SignalStrengthListener listens for signal
@@ -72,7 +67,8 @@ type AttentionListener func(byte)
 type SignalStrengthListener func(byte)
 
 // EEGPowerListener is sampled at 1 Hz and
-// provides 
+// provides 8 integers representing the 
+// different bands
 type EEGPowerListener func(int, int, int, int, int, int, int, int)
 
 // ThinkGearListener will listen to different
@@ -107,6 +103,8 @@ type ThinkGearListener struct {
 // synchronously to parsing, so it may be desirable
 // in certain situations for the user to throw data
 // onto channels for serial, asynchronous processing.
+// If you do use a channel, make sure that this channel
+// is asynchronous, or you can still hold up processing.
 //
 // This method will return a send-only channel
 // for the purposes of ceasing the connection. In
@@ -134,8 +132,6 @@ func Connect(serialPort string, listener *ThinkGearListener) (disconnect chan<- 
 
 // thinkGearParse parses the TG byte stream
 func thinkGearParse(device *os.File, listener *ThinkGearListener, disconnect <-chan bool) {
-    //var row int
-
     reader := bufio.NewReader(device)
     defer device.Close()
 
@@ -147,10 +143,6 @@ func thinkGearParse(device *os.File, listener *ThinkGearListener, disconnect <-c
             fmt.Fprintln(os.Stderr, "error reading stream:", err)
             os.Exit(1)
         }
-        //fmt.Fprintf(os.Stderr, "%v\t:%v\n", row, b)
-        //if row > 0 {
-        //    row++
-        //}
         return b
     }
 
@@ -166,7 +158,6 @@ func thinkGearParse(device *os.File, listener *ThinkGearListener, disconnect <-c
             default:
         }
 
-        //fmt.Fprintln(os.Stderr, "---------------------------")
         // sync up
         if next() != SYNC || next() != SYNC {
             continue
@@ -180,8 +171,6 @@ func thinkGearParse(device *os.File, listener *ThinkGearListener, disconnect <-c
         if pLength > MAX_PAYLOAD_LENGTH {
             continue
         }
-
-        //row = 1
 
         // read the entire payload
         payload := make([]byte, 0, pLength)
@@ -200,7 +189,6 @@ func thinkGearParse(device *os.File, listener *ThinkGearListener, disconnect <-c
         checksum = 0xFF &^ checksum
 
         stated := next()
-        //row = 0
         if checksum != stated {
             println("checksum has failed: ", checksum, "expected: ", stated)
             continue
