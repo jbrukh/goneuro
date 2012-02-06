@@ -12,6 +12,7 @@ import (
     "bufio"
     "fmt"
     "os"
+    "io"
 )
 
 // MAX_PAYLOAD_LENGTH is the maximum number of
@@ -111,7 +112,8 @@ type ThinkGearListener struct {
 // order to close the connection, send true to
 // the disconnect channel.
 func Connect(serialPort string, listener *ThinkGearListener) (disconnect chan<- bool, err os.Error) {
-    device, err := os.Open(serialPort)
+    var device io.ReadCloser
+    device, err = os.Open(serialPort)
     if err != nil {
         str := fmt.Sprintf("device problem: %s", err)
         return nil, os.NewError(str)
@@ -131,7 +133,7 @@ func Connect(serialPort string, listener *ThinkGearListener) (disconnect chan<- 
 
 
 // thinkGearParse parses the TG byte stream
-func thinkGearParse(device *os.File, listener *ThinkGearListener, disconnect <-chan bool) {
+func thinkGearParse(device io.ReadCloser, listener *ThinkGearListener, disconnect <-chan bool) {
     reader := bufio.NewReader(device)
     defer device.Close()
 
