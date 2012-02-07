@@ -28,4 +28,4 @@ See the [gopkgdocs](http://gopkgdoc.appspot.com/pkg/github.com/jbrukh/goneuro/pk
 
 ### Example
 
-See the example/ directory.
+See the examples/ directory.
