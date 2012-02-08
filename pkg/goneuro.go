@@ -194,7 +194,7 @@ func thinkGearParse(device io.ReadCloser, listener *ThinkGearListener, disconnec
 			println("checksum has failed: ", checksum, "expected: ", stated)
 			continue
 		}
-		parsePayload(payload, listener)
+		parsePayload(&payload, listener)
 	}
 	println("done with parsing")
 }
@@ -202,8 +202,9 @@ func thinkGearParse(device io.ReadCloser, listener *ThinkGearListener, disconnec
 // parsePayload will parse the payload buffer and trigger
 // the appropriate listeners in the provided listener
 // object
-func parsePayload(payload []byte, listener *ThinkGearListener) {
-	inx := 0
+func parsePayload(payloadPtr *[]byte, listener *ThinkGearListener) {
+	payload := *payloadPtr
+    inx := 0
 	var codeLevel int
 	nextRow := func(k int) {
 		inx += k
