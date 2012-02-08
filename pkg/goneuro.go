@@ -204,7 +204,7 @@ func thinkGearParse(device io.ReadCloser, listener *ThinkGearListener, disconnec
 // object
 func parsePayload(payloadPtr *[]byte, listener *ThinkGearListener) {
 	payload := *payloadPtr
-    inx := 0
+	inx := 0
 	var codeLevel int
 	nextRow := func(k int) {
 		inx += k
