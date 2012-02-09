@@ -13,7 +13,6 @@ GBROOT=../..
 # gb: compile/link against local install
 GCIMPORTS+= -I $(GBROOT)/_obj
 LDIMPORTS+= -L $(GBROOT)/_obj
-
 # gb: compile/link against GOPATH entries
 GOPATHSEP=:
 ifeq ($(GOHOSTOS),windows)
@@ -34,4 +33,3 @@ command: $(GBROOT)/bin/$(TARG)
 
 # gb: local dependencies
 $(TARG): $(GBROOT)/_obj/goneuro.a
-<<<<<<< local
