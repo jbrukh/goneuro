@@ -10,8 +10,12 @@ license.
 
 ### Installation
 
-Use [go-gb](http://code.google.com/p/go-gb/) to build. (Currently,
-the auto-generated makefiles are having compatibility issues.)
+This code has no dependencies besides the standard Go installation. You
+can install simply by running:
+
+  $ build
+
+Please read the Go documentation about setting the $GOPATH.
 
 ### Documentation
 
@@ -21,11 +25,12 @@ See the [gopkgdocs](http://gopkgdoc.appspot.com/pkg/github.com/jbrukh/goneuro/pk
 
 ### Features
 
-* Easy-to-use interface
-* Speed
+* Easy-to-use interface.
+* Speed.
+* Send the device's raw data to a standard socket.
 
 ------------
 
 ### Example
 
-See the examples/ directory.
+See the cmd/examples/ directory.
