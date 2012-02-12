@@ -10,7 +10,7 @@ const SERIAL_PORT = "/dev/tty.MindBand"
 
 func main() {
 
-    data := make(chan int16, 1)
+    data := make(chan int16)
 	listener := &goneuro.ThinkGearListener{
 		RawSignal: func(a, b byte) {
 			data <- int16(a)<<8 | int16(b)
