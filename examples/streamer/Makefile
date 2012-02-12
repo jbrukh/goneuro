@@ -3,9 +3,9 @@
 
 include $(GOROOT)/src/Make.inc
 
-TARG=tosocket
+TARG=streamer
 GOFILES=\
-	tosocket.go\
+	streamer.go\
 
 # gb: this is the local install
 GBROOT=../..
