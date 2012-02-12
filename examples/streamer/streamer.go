@@ -9,7 +9,6 @@ import (
 const SERIAL_PORT = "/dev/tty.MindBand"
 
 func main() {
-
     data := make(chan int16)
 	listener := &goneuro.ThinkGearListener{
 		RawSignal: func(a, b byte) {
