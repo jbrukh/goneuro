@@ -1,8 +1,8 @@
 package main
 
 import (
-	"goneuro"
 	"fmt"
+	"goneuro"
 	"time"
 )
 
@@ -21,8 +21,8 @@ func main() {
 		return
 	}
 
-	startNanos := time.Nanoseconds()
+	startNanos := time.Now()
 	for {
-		fmt.Println(time.Nanoseconds()-startNanos, <-data)
+		fmt.Println(time.Now().Sub(startNanos), <-data)
 	}
 }
