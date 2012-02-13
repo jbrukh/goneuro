@@ -10,12 +10,17 @@ license.
 
 ### Installation
 
-This code has no dependencies besides the standard Go installation. You
-can install simply by running:
+You need at least the following weekly version of Go:
 
-  $ build
+    go version weekly.2012-02-07 +52ba9506bd99
 
-Please read the Go documentation about setting the $GOPATH.
+You can then use the 'go' command to obtain the package:
+
+    $ go get github.com/jbrukh/goneuro
+
+To install the package and all of the executables, use:
+
+    $ go install -v github.com/jbrukh/goneuro/...
 
 ### Documentation
 
