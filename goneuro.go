@@ -10,9 +10,10 @@ package goneuro
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
-	"os"
 	"io"
+	"os"
 )
 
 // MAX_PAYLOAD_LENGTH is the maximum number of
@@ -111,12 +112,12 @@ type ThinkGearListener struct {
 // for the purposes of ceasing the connection. In
 // order to close the connection, send true to
 // the disconnect channel.
-func Connect(serialPort string, listener *ThinkGearListener) (disconnect chan<- bool, err os.Error) {
+func Connect(serialPort string, listener *ThinkGearListener) (disconnect chan<- bool, err error) {
 	var device io.ReadCloser
 	device, err = os.Open(serialPort)
 	if err != nil {
 		str := fmt.Sprintf("device problem: %s", err)
-		return nil, os.NewError(str)
+		return nil, errors.New(str)
 	}
 	println("connected: ", serialPort)
 
