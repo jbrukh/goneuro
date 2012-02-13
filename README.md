@@ -24,7 +24,7 @@ To install the package and all of the executables, use:
 
 ### Documentation
 
-See the [gopkgdocs](http://gopkgdoc.appspot.com/pkg/github.com/jbrukh/goneuro/pkg).
+See the [gopkgdocs](http://gopkgdoc.appspot.com/pkg/github.com/jbrukh/goneuro).
 
 ------------
 
