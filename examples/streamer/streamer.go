@@ -3,13 +3,13 @@ package main
 import (
 	"goneuro"
 	"fmt"
-    "time"
+	"time"
 )
 
 const SERIAL_PORT = "/dev/tty.MindBand"
 
 func main() {
-    data := make(chan int16)
+	data := make(chan int16)
 	listener := &goneuro.ThinkGearListener{
 		RawSignal: func(a, b byte) {
 			data <- int16(a)<<8 | int16(b)
@@ -21,8 +21,8 @@ func main() {
 		return
 	}
 
-    startNanos := time.Nanoseconds()
-    for {
-        fmt.Println(time.Nanoseconds()-startNanos, <-data)
-    }
+	startNanos := time.Nanoseconds()
+	for {
+		fmt.Println(time.Nanoseconds()-startNanos, <-data)
+	}
 }
