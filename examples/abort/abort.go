@@ -1,7 +1,7 @@
 package main
 
 import (
-	"goneuro"
+	"github.com/jbrukh/goneuro"
 	"fmt"
 	"os"
 	"time"

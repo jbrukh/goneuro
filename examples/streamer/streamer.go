@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"goneuro"
+	"github.com/jbrukh/goneuro"
 	"time"
 )
 
@@ -23,6 +23,6 @@ func main() {
 
 	startNanos := time.Now()
 	for {
-		fmt.Println(time.Now().Sub(startNanos), <-data)
+		fmt.Println(time.Now().Sub(startNanos).Nanoseconds(), <-data)
 	}
 }
