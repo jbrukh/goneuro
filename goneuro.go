@@ -16,6 +16,10 @@ import (
 	"os"
 )
 
+// Approx the number of data points to be
+// coming in from the device per second
+const WINDOW_SIZE        = 512
+
 // MAX_PAYLOAD_LENGTH is the maximum number of
 // bytes that can be contained in the payload
 // message, not including SYNC, PLENGTH and
@@ -130,6 +134,23 @@ func Connect(serialPort string, listener *ThinkGearListener) (disconnect chan<- 
 
 	disconnect = ch // cast to send-only
 	return
+}
+
+// ConnectRaw streams just the raw data on a channel;
+// this is provided as a convenience method
+func ConnectRaw(serialPort string) (disconnect chan<- bool, data <-chan float64, err error) {
+    ch := make(chan float64, WINDOW_SIZE)
+    listener := &ThinkGearListener{
+        RawSignal: func(a, b byte) {
+            ch <- float64(int16(a)<<8 | int16(b))
+        },
+    }
+    disconnect, err = Connect(serialPort, listener)
+    if err != nil {
+        return
+    }
+    data = ch
+    return
 }
 
 // thinkGearParse parses the TG byte stream

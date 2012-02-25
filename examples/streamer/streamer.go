@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-const SERIAL_PORT = "/dev/tty.MindBand"
+const SERIAL_PORT = "/dev/tty.MindBand2"
 
 func main() {
 	data := make(chan int16)
