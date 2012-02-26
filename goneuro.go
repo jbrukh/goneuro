@@ -168,14 +168,13 @@ func parseByteStream(device io.ReadCloser, pparser payloadParser, conn <-chan bo
 
 		stated := next()
 		if checksum != stated {
-			println("checksum has failed: ", checksum, "expected: ", stated)
+			println("checksum has failed: ", checksum, "expected: ", stated, "(skipping)")
 			continue
 		}
 		if pparser != nil {
 			pparser(&payload)
 		}
 	}
-	println("done with parsing")
 }
 
 // fullPayloadParser delivers a payload parser with the
@@ -238,7 +237,7 @@ func parseFullPayload(payloadPtr *[]byte, listener *ThinkGearListener) {
 					// get the data
 					listener.RawSignal(payload[inx+2], payload[inx+3])
 				} else {
-					println("raw signal did not have 2 bytes")
+					println("raw signal did not have 2 bytes (skipping)")
 					break
 				}
 			}
@@ -271,10 +270,6 @@ func parseRawPayload(payloadPtr *[]byte, output chan<- float64) {
 	payload := *payloadPtr
 	inx := 0
 	var codeLevel int
-	nextRow := func(k int) {
-		inx += k
-		codeLevel = 0
-	}
 	for inx < len(payload) {
 		switch payload[inx] {
 		case EXCODE:
@@ -283,15 +278,13 @@ func parseRawPayload(payloadPtr *[]byte, output chan<- float64) {
 			codeLevel++
 		case CODE_RAW_VALUE:
 			if payload[inx+1] == 2 {
-				// get the data
 			 	output <- float64(int16(payload[inx+2])<<8 | int16(payload[inx+3]))
 			} else {
-				println("raw signal did not have 2 bytes")
-				break
+				println("raw signal did not have 2 bytes (skipping)")
 			}
-			nextRow(4)
+			return // no other kind of data needed
 		default:
-			break
+			return
 		}
 	}
 }
@@ -304,6 +297,9 @@ type Device struct {
 	lock *sync.Mutex
 }
 
+// NewDevice returns a new Device; this object
+// will need to call Connect() (or ConnectRaw()) 
+// and Engage() in order to start reacting to data
 func NewDevice(serialPort string) *Device {
 	return &Device{
 		conn: make(chan bool),
@@ -375,23 +371,6 @@ func (d *Device) Connect(listener *ThinkGearListener) (err error) {
 	return
 }
 
-// connect will connect to the serial port and set internal
-// state of the Device appropriately. This method probably
-// needs to be synchronized externally.
-func (d *Device) connect() (device io.ReadCloser, err error) {
-	if (d.connected) {
-		return nil, errors.New("device is already connected")
-	}
-	device, err = os.Open(d.Port)
-	if err != nil {
-		str := fmt.Sprintf("device problem: %s", err)
-		return nil, errors.New(str)
-	}
-	d.connected = true
-	println("connected: ", d.Port)
-	return
-}
-
 // ConnectRaw will first initialize the Bluetooth
 // connection and begin receiving data through the
 // serial port. However, the data will not be parsed
@@ -412,5 +391,22 @@ func (d *Device) ConnectRaw(output chan<- float64) (err error){
 	// start spinning the data stream on another thread 
 	// and wait for Engage() call
 	go parseByteStream(device, rawPayloadParser(output), d.conn)
+	return
+}
+
+// connect will connect to the serial port and set internal
+// state of the Device appropriately. This method probably
+// needs to be synchronized externally.
+func (d *Device) connect() (device io.ReadCloser, err error) {
+	if (d.connected) {
+		return nil, errors.New("device is already connected")
+	}
+	device, err = os.Open(d.Port)
+	if err != nil {
+		str := fmt.Sprintf("device problem: %s", err)
+		return nil, errors.New(str)
+	}
+	d.connected = true
+	println("connected: ", d.Port)
 	return
 }
