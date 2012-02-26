@@ -6,6 +6,7 @@ import (
 	"flag"
 	"os"
 	"github.com/jbrukh/goneuro"
+	"fmt"
 )
 
 var tcpPort *string = flag.String("port", "9999", "port for the socket")
@@ -46,11 +47,12 @@ func main() {
 			},
 		}
 
-		disconnect, err := goneuro.Connect(*serialPort, handler)
-		if err != nil {
-			println("couldn't connect: ", *serialPort)
+		d := goneuro.NewDevice(*serialPort)
+		if err := d.Connect(handler); err != nil {
+			fmt.Println("couldn't connect: ", err)
 			continue
 		}
+		d.Engage() // start listening
 
 		for {
 			val := <-toSocket
@@ -65,7 +67,7 @@ func main() {
 			}
 		}
 
-		disconnect <- true
+		d.Disconnect()
 		print("cycling... ")
 	}
 }
