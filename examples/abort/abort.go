@@ -5,44 +5,50 @@ import (
 	"fmt"
 	"os"
 	"time"
+    "flag"
 )
 
-const SERIAL_PORT = "/dev/tty.MindBand"
+const DEFAULT_PORT = "/dev/tty.MindBand2"
+var serialPort *string = flag.String("port", DEFAULT_PORT, "the serial port for the device")
 
-func signalHandler(disconnect chan<- bool, ch chan byte) {
+func init() {
+    flag.Parse()
+}
+
+func signalHandler(d *goneuro.Device, data chan byte) {
 	println("sleeping 10 seconds...")
-	time.Sleep(2 * 1e9)
+	time.Sleep(10 * time.Second)
 	println("disconnecting...")
-	disconnect <- true
+	d.Disconnect()
 	println("closing ch")
-	close(ch)
+	close(data)
 }
 
 func main() {
 	// collect meditation on a channel
-	ch := make(chan byte, 512)
+	data := make(chan byte, 512)
 	listener := &goneuro.ThinkGearListener{
 		Meditation: func(b byte) {
-			ch <- b
+			data <- b
 		},
 	}
-
-	// open the device
-	disconnect, err := goneuro.Connect(SERIAL_PORT, listener)
-	if err != nil {
-		println("couldn't connect to device")
-		os.Exit(1)
-	}
+    println("getting device and connecting...")
+    d := goneuro.NewDevice(*serialPort)
+    if err := d.Connect(listener); err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    d.Engage()
 
 	// listen for Ctrl-C
-	go signalHandler(disconnect, ch)
+	go signalHandler(d, data)
 
 	// wait for and print values indefinitely 
 	for {
-		b, ok := <-ch
+		b, ok := <-data
 		if !ok {
-			println("will die in 2")
-			time.Sleep(1e9 * 2)
+			println("will die in 5")
+			time.Sleep(1e9 * 5)
 			break // we are done
 		}
 		fmt.Println("Meditation: ", b)
