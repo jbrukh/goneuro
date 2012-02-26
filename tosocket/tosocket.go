@@ -5,7 +5,7 @@ import (
 	"net"
 	"flag"
 	"os"
-	"goneuro"
+	"github.com/jbrukh/goneuro"
 )
 
 var tcpPort *string = flag.String("port", "9999", "port for the socket")
