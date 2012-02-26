@@ -61,7 +61,7 @@ as follows:
 	   },
 	}
 
-You can then connect to the device as follows:
+You can then connect to the device and check for connection errors:
 
     if err := d.Connect(listener); err != nil {
 		fmt.Println("could not connect: ", err)
@@ -78,19 +78,19 @@ Note that the channel is asynchronous, or else you may hold up
 processing.  All parsing of the data stream is done serially to calling
 back listeners and placing the raw signal on the channel.
 
-You can then connect as follows
+Here is the way to connect to raw data:
 
     if err := d.ConnectRaw(data); err != nil {
 	    fmt.Println("could not connect: ", err)
 	    os.Exit(1)
     }
 
-and raw signal will be delivered to the given channel, when
+Raw signal will be delivered to the given channel when
 processing starts.
 
 This brings us to the last and final point: in order for `goneuro`
 to actually start processing the data and delivering it to listeners
-and raw signal channels, you must call:
+and raw signal channels, you must call
 
     d.Engage()
 
@@ -98,7 +98,3 @@ If you wish to disconnect from the device gracefully without turning
 off your program, you can call:
 
     d.Disconnect()
-
-
-
-}
